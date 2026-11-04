@@ -1,0 +1,12 @@
+.env
+venv/
+__pycache__/
+# Local database and generated files
+data/*.db
+data/generated_images/
+
+# Python cache
+*.py[cod]
+
+# Streamlit secrets
+.streamlit/secrets.toml
