@@ -3,19 +3,30 @@ import os
 import json
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 import streamlit as st
 
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
+
 if not API_KEY:
-    raise ValueError(
-        "GEMINI_API_KEY is missing. Check your .env file."
+    try:
+        API_KEY = st.secrets["GEMINI_API_KEY"]
+    except (KeyError, FileNotFoundError):
+        API_KEY = None
+
+client = genai.Client(
+    api_key=API_KEY,
+    http_options=types.HttpOptions(
+        timeout=10000,
+        retry_options=types.HttpRetryOptions(
+            attempts=1
+        )
     )
+)
 
-client = genai.Client(api_key=API_KEY)
-
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_NAME = "gemini-3.5-flash-lite"
 
 
 def generate_content(topic, content_format, platform):
@@ -66,12 +77,12 @@ Return valid JSON only:
     print("Connecting to Gemini...", flush=True)
 
     try:
-        interaction = client.interactions.create(
-            model=MODEL_NAME,
-            input=prompt
-        )
-
-        print("Gemini response received!", flush=True)
+      interaction = client.interactions.create(
+        model=MODEL_NAME,
+        input=prompt,
+        timeout=30
+      )
+      print("Gemini response received!", flush=True)
 
     except Exception as error:
         print("Gemini request failed:", error, flush=True)

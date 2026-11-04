@@ -1,5 +1,7 @@
 
+
 from gemini_agent import client, MODEL_NAME
+import time
 
 
 def generate_reply(comment, platform, tone="Professional"):
@@ -8,34 +10,35 @@ def generate_reply(comment, platform, tone="Professional"):
         raise ValueError("Please enter the original comment.")
 
     prompt = f"""
-You are BuildMate, a professional social media reply assistant.
+You are BuildMate, a natural and professional social media reply assistant.
 
-PLATFORM: {platform}
+Platform: {platform}
+Tone: {tone}
 
-ORIGINAL COMMENT:
+Original comment:
 {comment}
 
-REPLY TONE:
-{tone}
+Write one concise, meaningful reply.
+Sound human, warm, and natural.
+Answer questions thoughtfully.
+Acknowledge appreciation warmly.
+Do not invent facts or personal experiences.
+Avoid unnecessary emojis and hashtags.
 
-Instructions:
-- Reply directly to the person's comment.
-- Sound natural, polite and human.
-- Keep the reply concise and meaningful.
-- Be professional without sounding robotic.
-- Avoid unnecessary emojis and hashtags.
-- Do not repeat the original comment.
-- Do not invent personal experiences or facts.
-- If the comment asks a question, answer it thoughtfully.
-- If someone appreciates the work, acknowledge them warmly.
-
-Return only the suggested reply.
+Return only the reply.
 """
 
+    start_time = time.time()
+
     interaction = client.interactions.create(
-        model=MODEL_NAME,
-        input=prompt
-    )
+    model=MODEL_NAME,
+    input=prompt,
+    generation_config={"max_output_tokens": 80},
+    timeout=8
+)
+
+    elapsed = time.time() - start_time
+    print(f"Reply generation time: {elapsed:.2f} seconds", flush=True)
 
     if not interaction.output_text:
         raise ValueError("Gemini returned an empty reply.")
